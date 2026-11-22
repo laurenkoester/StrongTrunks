@@ -1,5 +1,5 @@
 // Network first, so teammates always get the newest version. The cache only helps when offline.
-const CACHE = 'strong-trunks-v1';
+const CACHE = 'strong-trunks-v2';
 self.addEventListener('install', (e) => { self.skipWaiting(); });
 self.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', (e) => {

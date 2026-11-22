@@ -276,6 +276,17 @@ input[type=date]{color-scheme:dark}
 .opt.orn i{font-style:normal;font-size:.7rem;line-height:1.1;color:var(--muted)}
 .opt.orn input:checked + span i{color:var(--ink)}
 .rg{display:inline-flex;vertical-align:middle;margin-right:6px}
+
+/* compact header: just a small logo in the corner + tabs, not sticky */
+.top{position:relative;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-bottom:0}
+.top .wrap{align-items:center;padding-top:10px;padding-bottom:2px}
+.logo{width:38px;height:38px}
+.brand>div{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tabs button{padding:8px 10px}
+.top{margin-bottom:10px}
+.dark-front .top{margin-bottom:0}
+.dark-front .brand>div{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal}
+.dark-front .logo{width:44px;height:44px}
 </style>
 </head>
 <body>
