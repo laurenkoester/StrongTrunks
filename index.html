@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Strong Trunks</title>
-<meta name="theme-color" content="#1E5A38">
+<meta name="theme-color" content="#050D09">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Strong Trunks">
@@ -146,7 +146,7 @@ legend{font-weight:700;padding:0;margin-bottom:8px}
 .primary:active{transform:translateY(1px)}
 .recent{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .recent li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
-.recent button{background:none;border:1px solid var(--line);border-radius:8px;padding:2px 10px;color:var(--muted)}
+.recent button{background:none;border:1px solid var(--line);border-radius:8px;padding:8px 14px;min-height:40px;color:var(--danger,#B3261E);font-weight:600}
 h3.sec{font-size:1.05rem;margin:22px 0 6px}
 .whobar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px 16px}
 .whobar label{font:800 1.05rem var(--display)}
@@ -237,6 +237,45 @@ input[type=date]{font:inherit;padding:11px 12px;border:2px solid var(--line);bor
 .corner{position:absolute;z-index:4;left:20px;bottom:18px;max-width:330px;font-size:.86rem;line-height:1.4;color:#A9BFB0}
 @media (max-width:640px){.corner{right:20px;max-width:none;text-align:center}}
 @media (prefers-reduced-motion:reduce){.layer,.fog,.eyes,.ff,.spot{animation:none}.eyes{opacity:.8}.ff{opacity:.6}}
+
+/* ===== Night forest theme for every page (always on) ===== */
+:root:root:root:root{
+  --bg:#050D09; --surface:rgba(13,26,19,.80); --ink:#E7F1E9; --muted:#9DB2A3; --line:rgba(150,190,165,.20);
+  --cardinal:#F0786F; --btn:#4DB97A; --btn-ink:#06140B;
+  --leaf-a:#3A9A5C; --leaf-b:#4CB16D; --leaf-c:#2F8450;
+  --sad-a:#8E8D56; --sad-b:#9C985F; --sad-c:#7D7D4E;
+  --bark:#8A6244; --bark-sad:#8D7E70; --face:#120D09; --tear:#6DB8F0; --blush:#D77878;
+  --ok-bg:rgba(40,110,70,.35); --ok-ink:#A9E6C2; --warn-bg:rgba(120,80,20,.38); --warn-ink:#F2C98A; --sad-bg:rgba(130,45,40,.38); --sad-ink:#F2B5AF;
+  color-scheme:dark;
+}
+:root:root:root:root[data-season="fall"]{--sky:#24180F;--ground:#4B3621;--mound:#3D2B19;--leaf-a:#D2692C;--leaf-b:#E59A33;--leaf-c:#B24A26;--sad-a:#8F8A7C;--sad-b:#9D9788;--sad-c:#7A7566}
+:root:root:root:root[data-season="winter"]{--sky:#0E1A2B;--ground:#3A4E69;--mound:#2F425B;--leaf-a:#2E8F62;--leaf-b:#3AA372;--leaf-c:#257852;--sad-a:#7F8E80;--sad-b:#8C9B8E;--sad-c:#6E7C70}
+body{background:#050D09;position:relative}
+.bgforest{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:radial-gradient(110% 70% at 50% 100%,#14351F 0%,#0A1A12 48%,#050D09 100%)}
+.bgforest .layer{opacity:.75}
+.bgforest .fog{height:40%}
+.top{background:rgba(5,13,9,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom-color:var(--line)}
+.card,.bubble,.forest{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.card{box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.bubble{background:rgba(13,26,19,.88)}
+.bubble::after{background:rgba(13,26,19,.95)}
+.stage{background:radial-gradient(ellipse 60% 55% at 50% 92%,rgba(255,236,180,.30),rgba(255,236,180,0) 70%),linear-gradient(to bottom,#040A07,var(--sky))}
+.stage::before{content:'';position:absolute;z-index:0;left:50%;top:0;bottom:0;width:78%;transform:translateX(-50%);clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);background:linear-gradient(to bottom,rgba(255,240,200,0),rgba(255,240,200,.20));filter:blur(8px);pointer-events:none}
+.stage svg{position:relative;z-index:1}
+.forest{background:radial-gradient(ellipse 70% 50% at 50% 100%,rgba(255,236,180,.16),rgba(255,236,180,0) 70%),linear-gradient(to bottom,#040A07,var(--sky))}
+input[type=date]{color-scheme:dark}
+.opt span,.names button,.rank button,.recent button{color:var(--ink)}
+.dark-front .bgforest{display:none}
+.dark-front .top .wrap{max-width:none;padding-left:20px;padding-right:20px}
+.dark-front{background:#050D09}
+
+.ornpick{border:0;padding:0;margin:0 0 4px}
+.orngrp{font:700 .8rem var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:10px 0 6px}
+.ornrow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.opt.orn span{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;text-align:center}
+.opt.orn i{font-style:normal;font-size:.7rem;line-height:1.1;color:var(--muted)}
+.opt.orn input:checked + span i{color:var(--ink)}
+.rg{display:inline-flex;vertical-align:middle;margin-right:6px}
 </style>
 </head>
 <body>

@@ -38,7 +38,7 @@ function stageOf(total){var n='Seedling';for(var i=0;i<STAGES.length;i++){if(tot
 /* ---------- state ---------- */
 var S={user:null,authReady:false,treeId:null,treeKnown:false,members:emptyMembers(),loaded:false,cached:false,slow:false,err:null,
   tab:'my-tree',centerSel:true,sel:null,busy:false,growUntil:0,fakeSeason:null,confirmRelease:false,
-  form:{type:'core',min:20,date:''},lastHtml:'',dirty:false,layoutKey:''};
+  form:{type:'core',min:20,date:'',orn:''},lastHtml:'',dirty:false,layoutKey:''};
 
 /* ---------- growth rules ---------- */
 function season(){return S.fakeSeason||(todayKey()<=THANKSGIVING?'fall':'winter');}
@@ -59,11 +59,12 @@ function statsOf(m){
   while(days[keyFromNum(n)]){streak++;n--;}
   var week=0;
   for(i=0;i<logs.length;i++){var dd=diffDays(t,logs[i].d);if(dd>=0&&dd<7)week++;}
+  var orn=logs.slice().sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:(a.ts||0)-(b.ts||0);}).slice(-120).map(function(l){return l.o||'';});
   var g=1-Math.exp(-total/55);
   var face=since>=DROOP_DAYS?'sad':since===2?'worried':(since===0&&total>0)?'joy':'happy';
   var lastType=null;
   for(i=0;i<logs.length;i++){if(logs[i].d===last&&(lastType===null||logs[i].ts>=0))lastType=logs[i].t;}
-  return {c:c,total:total,last:last,since:since,streak:streak,week:week,g:g,
+  return {orn:orn,c:c,total:total,last:last,since:since,streak:streak,week:week,g:g,
     ft:2+58*g,mood:since>=DROOP_DAYS?'sad':'happy',face:face,lastType:lastType,stage:stageOf(total)};
 }
 function statusOf(s){
@@ -254,7 +255,9 @@ function treeSVG(s,id,label,o){
     for(k=0;k<cnt;k++){
       var v=0.1+0.85*Math.pow(rd(),0.85),u=rd()*2-1,wv=hw*(0.28+0.62*v);
       var dx=X+u*wv*0.82,dy=cTop+v*(cBot-cTop)*0.96;
-      p+='<circle cx="'+dx.toFixed(1)+'" cy="'+dy.toFixed(1)+'" r="'+(2.7+(k%3)*0.35).toFixed(2)+'" fill="'+cols[k%3]+'" stroke="rgba(0,0,0,.25)" stroke-width=".6"/>';
+      var oid=s.orn&&s.orn[k];
+      if(oid&&ORN[oid])p+='<g transform="translate('+dx.toFixed(1)+' '+dy.toFixed(1)+') scale('+(1.0+(k%3)*0.08).toFixed(2)+')">'+ORN[oid][1]+'</g>';
+      else p+='<circle cx="'+dx.toFixed(1)+'" cy="'+dy.toFixed(1)+'" r="'+(2.7+(k%3)*0.35).toFixed(2)+'" fill="'+cols[k%3]+'" stroke="rgba(0,0,0,.25)" stroke-width=".6"/>';
       if(o.grew&&k===cnt-1){p+='<circle class="halo" cx="'+dx.toFixed(1)+'" cy="'+dy.toFixed(1)+'" r="7" fill="none" stroke="#F5C542" stroke-width="2" style="transform-origin:'+dx.toFixed(1)+'px '+dy.toFixed(1)+'px"/>';}
     }
     if(T.main==='bow')p+=bow(X-hw*0.45,cTop+(cBot-cTop)*0.3,1.1);
@@ -273,6 +276,30 @@ function treeSVG(s,id,label,o){
   var vbStr=o.vb||('0 '+(VB_TOP+VB_H-vbH)+' 200 '+vbH);
   return '<svg viewBox="'+vbStr+'" preserveAspectRatio="xMidYMax meet" role="img" aria-label="'+esc(label||'Tree')+'" xmlns="http://www.w3.org/2000/svg">'+p+'</svg>';
 }
+
+
+/* ---------- ornaments: one per log, chosen when logging ---------- */
+var ORN_GROUPS=[['Rowing',['oar','shell','medal','watch']],['Thanksgiving',['pumpkin','acorn','leaf','turkey']],['Christmas',['star','cane','gift','bauble']],['Hanukkah',['dreidel','menorah','david','gelt']]];
+var ORN={
+  oar:['Oar','<line x1="-5" y1="5" x2="2" y2="-2" stroke="#C9A36B" stroke-width="1.7" stroke-linecap="round"/><ellipse cx="4" cy="-4" rx="2" ry="3.8" transform="rotate(45 4 -4)" fill="#E5645C" stroke="#7A1010" stroke-width=".6"/>'],
+  shell:['Racing shell','<path d="M-6.5 2 Q0 4.6 6.5 2 Q0 0 -6.5 2Z" fill="#F1E3BC" stroke="#6B4A33" stroke-width=".7"/><line x1="-3.5" y1="-3.6" x2="-1.5" y2="1" stroke="#C9A36B" stroke-width="1.2" stroke-linecap="round"/><line x1="1.5" y1="1" x2="3.5" y2="-3.6" stroke="#C9A36B" stroke-width="1.2" stroke-linecap="round"/><circle cx="0" cy="-1.2" r="1.3" fill="#E5645C"/>'],
+  medal:['Medal','<path d="M-2.6 -6 L0 -1 L2.6 -6Z" fill="#4DA3FF"/><circle cx="0" cy="2.2" r="3.7" fill="#F5C542" stroke="#B8860B" stroke-width=".8"/><circle cx="0" cy="2.2" r="1.7" fill="none" stroke="#B8860B" stroke-width=".6"/>'],
+  watch:['Stopwatch','<rect x="-1.2" y="-6" width="2.4" height="1.8" fill="#9AA5AB"/><circle cx="0" cy="1" r="4.6" fill="#EEF3F5" stroke="#34424A" stroke-width=".9"/><path d="M0 1 L0 -2 M0 1 L2.4 2" stroke="#E5645C" stroke-width="1" stroke-linecap="round"/>'],
+  pumpkin:['Pumpkin','<ellipse cx="-2.2" cy="1" rx="3.2" ry="4" fill="#D9641A"/><ellipse cx="2.2" cy="1" rx="3.2" ry="4" fill="#E8791F"/><ellipse cx="0" cy="1" rx="2" ry="4.2" fill="#F08A2A"/><rect x="-.8" y="-4.6" width="1.6" height="2.4" rx=".6" fill="#3E7D32"/>'],
+  acorn:['Acorn','<ellipse cx="0" cy="1.6" rx="3.2" ry="4" fill="#C98A4B"/><path d="M-4 -.6 Q0 -5.2 4 -.6 Z" fill="#7A4A22"/><rect x="-.6" y="-5.6" width="1.2" height="1.8" fill="#5A3416"/>'],
+  leaf:['Maple leaf','<path d="M0 -5.5 L1.5 -2.5 L4.5 -3 L3 0 L5 1.5 L1.2 2 L1 5 L0 4 L-1 5 L-1.2 2 L-5 1.5 L-3 0 L-4.5 -3 L-1.5 -2.5 Z" fill="#C4381A" stroke="#7A1F0C" stroke-width=".5"/>'],
+  turkey:['Turkey','<ellipse cx="-3.6" cy="-2" rx="1.5" ry="3.2" transform="rotate(-50 -3.6 -2)" fill="#C4381A"/><ellipse cx="-1.4" cy="-3.6" rx="1.5" ry="3.2" transform="rotate(-18 -1.4 -3.6)" fill="#E8A33A"/><ellipse cx="1.4" cy="-3.6" rx="1.5" ry="3.2" transform="rotate(18 1.4 -3.6)" fill="#D9641A"/><ellipse cx="3.6" cy="-2" rx="1.5" ry="3.2" transform="rotate(50 3.6 -2)" fill="#8C1515"/><circle cx="0" cy="1.6" r="3.2" fill="#7A4A22"/><circle cx=".9" cy="2.8" r=".9" fill="#E5645C"/><circle cx="-.7" cy=".9" r=".5" fill="#fff"/>'],
+  star:['Star','<polygon points="0,-5.6 1.6,-1.8 5.6,-1.6 2.5,1 3.5,5 0,2.8 -3.5,5 -2.5,1 -5.6,-1.6 -1.6,-1.8" fill="#F5C542" stroke="#B8860B" stroke-width=".5"/>'],
+  cane:['Candy cane','<path d="M-2 5.6 V-2 Q-2 -5.2 1 -5.2 Q4 -5.2 4 -2" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/><path d="M-2 5.6 V-2 Q-2 -5.2 1 -5.2 Q4 -5.2 4 -2" fill="none" stroke="#D7263D" stroke-width="2.4" stroke-dasharray="1.5 1.6"/>'],
+  gift:['Gift','<rect x="-4.6" y="-2" width="9.2" height="7" rx="1" fill="#D7263D"/><rect x="-.8" y="-2" width="1.6" height="7" fill="#F5C542"/><rect x="-4.6" y="1" width="9.2" height="1.6" fill="#F5C542"/><path d="M0 -2 Q-4 -6 -2 -4.4 Z M0 -2 Q4 -6 2 -4.4 Z" fill="#F5C542" stroke="#B8860B" stroke-width=".5"/>'],
+  bauble:['Bauble','<rect x="-1.4" y="-5.4" width="2.8" height="2" rx=".5" fill="#C9A36B"/><circle cx="0" cy="1" r="4.4" fill="#D7263D" stroke="rgba(0,0,0,.25)" stroke-width=".5"/><ellipse cx="-1.5" cy="-.4" rx="1.1" ry="1.6" fill="rgba(255,255,255,.45)"/>'],
+  dreidel:['Dreidel','<line x1="0" y1="-6" x2="0" y2="-3.4" stroke="#8A6244" stroke-width="1.2" stroke-linecap="round"/><rect x="-4" y="-3.6" width="8" height="2" rx=".6" fill="#1E4FA3"/><path d="M-4 -1.6 H4 L3 2.6 L0 6 L-3 2.6 Z" fill="#2F6FD6"/><circle cx="0" cy="0" r="1.1" fill="#fff"/>'],
+  menorah:['Menorah','<path d="M-5.6 -1 Q-5.6 3.2 0 3.2 Q5.6 3.2 5.6 -1" fill="none" stroke="#F5C542" stroke-width="1.3"/><path d="M0 3.2 V6 M-2.4 6 H2.4" stroke="#F5C542" stroke-width="1.3" stroke-linecap="round"/><path d="M-5.6 -1 V-3.4 M-2.8 1.8 V-3.4 M0 3 V-3.4 M2.8 1.8 V-3.4 M5.6 -1 V-3.4" stroke="#F5C542" stroke-width="1.1"/><circle cx="-5.6" cy="-4.6" r=".9" fill="#FF9F43"/><circle cx="-2.8" cy="-4.6" r=".9" fill="#FF9F43"/><circle cx="0" cy="-4.6" r=".9" fill="#FF9F43"/><circle cx="2.8" cy="-4.6" r=".9" fill="#FF9F43"/><circle cx="5.6" cy="-4.6" r=".9" fill="#FF9F43"/>'],
+  david:['Star of David','<polygon points="0,-5.6 4.9,2.8 -4.9,2.8" fill="none" stroke="#6FB1FF" stroke-width="1.3" stroke-linejoin="round"/><polygon points="0,5.6 4.9,-2.8 -4.9,-2.8" fill="none" stroke="#9CCBFF" stroke-width="1.3" stroke-linejoin="round"/>'],
+  gelt:['Gelt','<circle cx="0" cy="0" r="4.6" fill="#F5C542" stroke="#B8860B" stroke-width=".8"/><circle cx="0" cy="0" r="3" fill="none" stroke="#B8860B" stroke-width=".6"/><path d="M0 -1.8 L1.4 .8 H-1.4 Z" fill="#B8860B"/>']
+};
+function ornSvg(id,px){var o=ORN[id];return o?'<svg viewBox="-7 -7 14 14" width="'+px+'" height="'+px+'" aria-hidden="true">'+o[1]+'</svg>':'';}
+function defaultOrn(){return season()==='fall'?'pumpkin':'star';}
 
 /* ---------- views ---------- */
 function nextGrowth(s){
@@ -320,6 +347,14 @@ function viewLanding(){
     '<p class="corner">Log core, mobility, or strength to grow your tree and compete with the whole forest.</p>'+
   '</section>';
 }
+function mountBg(){
+  if(document.getElementById('bgforest'))return;
+  var d=document.createElement('div');d.id='bgforest';d.className='bgforest';d.setAttribute('aria-hidden','true');
+  var R=rng(5),ff='',i;
+  for(i=0;i<14;i++)ff+='<i class="ff" style="left:'+(R()*100).toFixed(1)+'%;top:'+(25+R()*70).toFixed(1)+'%;--d:'+(6+R()*7).toFixed(1)+'s;--dx:'+Math.round((R()-0.5)*60)+'px;--dy:'+Math.round((R()-0.5)*50)+'px;animation-delay:-'+(R()*9).toFixed(1)+'s"></i>';
+  d.innerHTML=silhouettes(3,24,150,250,'#0D1F17',0)+silhouettes(8,14,210,330,'#091510',0)+'<div class="fog"></div>'+ff;
+  document.body.insertBefore(d,document.body.firstChild);
+}
 function viewClaim(){
   var h='<section class="card"><h2>Which one is you?</h2><p class="muted" style="margin:8px 0 14px">Pick your name. It links your tree to this Google account, so only you can log for it.</p><div class="names">',n=0;
   ROSTER.forEach(function(r){
@@ -366,16 +401,25 @@ function viewMy(){
     h+='<label class="opt"><input type="radio" name="min" id="m-'+m+'" value="'+m+'"'+(f.min===m?' checked':'')+'><span>'+m+' min</span></label>';
   });
   h+='</div></fieldset><fieldset><legend>Which day?</legend><input type="date" id="logdate" name="date" value="'+(f.date||todayKey())+'" min="'+daysAgoKey(MAX_BACK)+'" max="'+todayKey()+'">';
-  h+='</div></fieldset><button class="primary" type="submit" id="logbtn"'+(S.busy?' disabled':'')+'>Log workout</button></form>';
+  h+='</fieldset><fieldset class="ornpick"><legend>Pick your ornament</legend>';
+  var curO=ORN[f.orn]?f.orn:defaultOrn();
+  ORN_GROUPS.forEach(function(g){
+    h+='<p class="orngrp">'+g[0]+'</p><div class="ornrow">';
+    g[1].forEach(function(id){
+      h+='<label class="opt orn"><input type="radio" name="orn" id="o-'+id+'" value="'+id+'"'+(curO===id?' checked':'')+'><span>'+ornSvg(id,30)+'<i>'+ORN[id][0]+'</i></span></label>';
+    });
+    h+='</div>';
+  });
+  h+='</fieldset><button class="primary" type="submit" id="logbtn"'+(S.busy?' disabled':'')+'>Log workout</button></form>';
 
-  var recent=me.logs.slice().sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:b.ts-a.ts;}).slice(0,6);
+  var recent=me.logs.slice().sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:b.ts-a.ts;}).slice(0,12);
   h+='<h3 class="sec">Recent logs</h3>';
   if(!recent.length){h+='<p class="muted">Nothing yet. Every log adds an ornament to your tree.</p>';}
   else{
     h+='<ul class="recent">';
     recent.forEach(function(l){
       var ago=diffDays(todayKey(),l.d),when=ago===0?'Today':ago===1?'Yesterday':ago+' days ago';
-      h+='<li><span><b>'+TYPES[l.t].label+'</b>'+(l.m?' &middot; '+l.m+' min':'')+' &middot; <span class="muted">'+when+'</span></span><button data-a="undo" data-id="'+esc(l.id)+'" aria-label="Remove this '+TYPES[l.t].label+' log">Undo</button></li>';
+      h+='<li><span>'+(l.o&&ORN[l.o]?'<span class="rg" title="'+ORN[l.o][0]+'">'+ornSvg(l.o,18)+'</span>':'')+'<b>'+TYPES[l.t].label+'</b>'+(l.m?' &middot; '+l.m+' min':'')+' &middot; <span class="muted">'+when+'</span></span><button data-a="undo" data-id="'+esc(l.id)+'" aria-label="Delete this '+TYPES[l.t].label+' log">Delete</button></li>';
     });
     h+='</ul>';
   }
@@ -440,6 +484,7 @@ function viewGrove(){
 
 /* ---------- render ---------- */
 function render(force){
+  mountBg();
   var ae=document.activeElement;
   if(!force&&ae&&ae.tagName==='INPUT'&&ae.type==='text'){S.dirty=true;return;}
   S.dirty=false;
@@ -477,11 +522,11 @@ function toast(msg){
 /* ---------- writes (one at a time) ---------- */
 var chain=Promise.resolve();
 function writeTree(id,logs){
-  chain=chain.then(function(){return B.saveLogs(id,S.user.uid,logs);});
-  chain.catch(function(){});
-  return chain;
+  var p=chain.catch(function(){}).then(function(){return B.saveLogs(id,S.user.uid,logs);});
+  chain=p;
+  return p;
 }
-function cloneLogs(m){return m.logs.map(function(l){return {id:l.id,d:l.d,t:l.t,m:l.m,ts:l.ts};});}
+function cloneLogs(m){return m.logs.map(function(l){return {id:l.id,d:l.d,t:l.t,m:l.m,ts:l.ts,o:l.o||''};});}
 function failToast(){toast('That did not save. Check your connection and try again.');}
 function setMine(id,logs){
   var m=S.members.get(id);
@@ -510,7 +555,7 @@ function doLog(){
   var me=S.treeId&&S.members.get(S.treeId);
   if(!me||S.busy||!S.user)return;
   var before=statsOf(me),wasSad=before.mood==='sad',f=S.form,id=S.treeId,logs=cloneLogs(me);
-  logs.push({id:Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36),d:logDate(),t:f.type,m:f.min,ts:Date.now()});
+  logs.push({id:Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36),d:logDate(),t:f.type,m:f.min,ts:Date.now(),o:(ORN[f.orn]?f.orn:defaultOrn())});
   if(logs.length>MAX_LOGS)logs=logs.slice(-MAX_LOGS);
   S.form.date='';
   setMine(id,logs);
@@ -518,7 +563,7 @@ function doLog(){
   S.growUntil=Date.now()+1800;
   S.busy=true;
   writeTree(id,logs).catch(failToast).then(function(){S.busy=false;render(true);});
-  var msg='+'+(after.ft-before.ft).toFixed(1)+' ft and a new ornament. '+first+'\'s tree is '+after.ft.toFixed(1)+' ft.';
+  var msg='+'+(after.ft-before.ft).toFixed(1)+' ft and a new '+ORN[(logs[logs.length-1]||{}).o||defaultOrn()][0].toLowerCase()+' ornament. '+first+'\'s tree is '+after.ft.toFixed(1)+' ft.';
   if(after.stage!==before.stage)msg=first+'\'s tree is now a '+after.stage.toLowerCase()+'. '+after.ft.toFixed(1)+' ft.';
   else if(wasSad&&after.mood==='happy')msg=first+'\'s tree perked up. '+after.ft.toFixed(1)+' ft.';
   toast(msg);
@@ -529,8 +574,10 @@ function doUndo(lid){
   if(!me||!S.user)return;
   var logs=cloneLogs(me).filter(function(l){return l.id!==lid;});
   if(logs.length===me.logs.length)return;
+  var gone=me.logs.filter(function(l){return l.id===lid;})[0];
   setMine(S.treeId,logs);
   writeTree(S.treeId,logs).catch(failToast);
+  toast('Deleted '+TYPES[gone.t].label.toLowerCase()+(gone.m?' · '+gone.m+' min':'')+'. Your tree shrank.');
   render(true);
 }
 
@@ -552,6 +599,7 @@ document.addEventListener('change',function(e){
   if(t.name==='type')S.form.type=t.value;
   else if(t.name==='min')S.form.min=Number(t.value);
   else if(t.name==='date')S.form.date=t.value;
+  else if(t.name==='orn'){S.form.orn=t.value;try{localStorage.setItem('trunks-orn',t.value);}catch(x){}}
 });
 document.addEventListener('submit',function(e){
   e.preventDefault();
@@ -578,12 +626,13 @@ function cleanLogs(d){
     for(var i=0;i<d.logs.length;i++){
       var l=d.logs[i];
       if(l&&TYPES[l.t]&&typeof l.d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(l.d)){
-        logs.push({id:String(l.id||''),d:l.d,t:l.t,m:Number(l.m)||0,ts:Number(l.ts)||0});
+        logs.push({id:String(l.id||''),d:l.d,t:l.t,m:Number(l.m)||0,ts:Number(l.ts)||0,o:ORN[l.o]?l.o:''});
       }
     }
   }
   return logs.slice(-MAX_LOGS);
 }
+try{var so=localStorage.getItem('trunks-orn');if(so&&ORN[so])S.form.orn=so;}catch(x){}
 var unsubs=[];
 function teardown(){unsubs.forEach(function(u){try{u();}catch(x){}});unsubs=[];}
 var DATA_ERR='The team data could not be loaded. Reload the page. If it keeps failing, the Firestore rules may not be published yet.';
