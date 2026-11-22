@@ -270,7 +270,8 @@ function treeSVG(s,id,label,o){
   p+='</g>';
   var vbH=VB_H;
   if(o.zoom){var tt=s.total;vbH=tt<3?130:tt<10?160:tt<25?200:tt<50?236:266;}
-  return '<svg viewBox="0 '+(VB_TOP+VB_H-vbH)+' 200 '+vbH+'" preserveAspectRatio="xMidYMax meet" role="img" aria-label="'+esc(label||'Tree')+'" xmlns="http://www.w3.org/2000/svg">'+p+'</svg>';
+  var vbStr=o.vb||('0 '+(VB_TOP+VB_H-vbH)+' 200 '+vbH);
+  return '<svg viewBox="'+vbStr+'" preserveAspectRatio="xMidYMax meet" role="img" aria-label="'+esc(label||'Tree')+'" xmlns="http://www.w3.org/2000/svg">'+p+'</svg>';
 }
 
 /* ---------- views ---------- */
@@ -284,13 +285,40 @@ function nextGrowth(s){
   return {text:'Old growth. Keep me happy to stay on top.',pct:100};
 }
 
+function silhouettes(seed,n,hMin,hMax,fill,keepClear){
+  var R=rng(seed),p='',i,t;
+  for(i=0;i<n;i++){
+    var x=(i+0.5)*1200/n+(R()-0.5)*1200/n*0.8,h=hMin+R()*(hMax-hMin),bw=h*0.34;
+    if(keepClear&&Math.abs(x-600)<keepClear)continue;
+    for(t=0;t<4;t++){
+      var ay=400-h+t*h*0.2,by=ay+h*0.4,hw=bw*(0.42+0.2*t);
+      p+='<polygon points="'+x.toFixed(0)+','+ay.toFixed(0)+' '+(x+hw).toFixed(0)+','+by.toFixed(0)+' '+(x-hw).toFixed(0)+','+by.toFixed(0)+'"/>';
+    }
+    p+='<rect x="'+(x-3).toFixed(0)+'" y="'+(400-h*0.2).toFixed(0)+'" width="6" height="'+(h*0.2).toFixed(0)+'"/>';
+  }
+  return '<svg class="layer" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true" fill="'+fill+'">'+p+'</svg>';
+}
+var G_ICON='<svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
 function viewLanding(){
-  var preview=treeSVG(statsOf({logs:[],joined:Date.now()}),'preview','A seedling',{ground:true,zoom:true});
-  if(!S.authReady)return '<p class="note">Loading...</p>';
-  return '<section class="card landing"><div class="stage">'+preview+'</div><div><h2>Grow your tree</h2>'+
-    '<p class="muted" style="margin:8px 0 16px">Log core, mobility and lifting sessions. Every log grows your tree, and the whole team sees the forest.</p>'+
-    '<button class="primary" data-a="signin" id="signinbtn">Sign in with Google</button>'+
-    (S.err&&S.err.signin?'<p class="note" style="margin-top:12px">'+esc(S.err.signin)+'</p>':'')+'</div></section>';
+  var s=statsOf({logs:[],joined:Date.now()});
+  s.face='joy';
+  var seedling=treeSVG(s,'welcome','A little seedling waving hello',{vb:'30 196 140 86'});
+  var R=rng(11),i,ff='',eyes='';
+  for(i=0;i<18;i++){
+    ff+='<i class="ff" style="left:'+(R()*100).toFixed(1)+'%;top:'+(30+R()*60).toFixed(1)+'%;--d:'+(6+R()*7).toFixed(1)+'s;--dx:'+Math.round((R()-0.5)*60)+'px;--dy:'+Math.round((R()-0.5)*50)+'px;animation-delay:-'+(R()*9).toFixed(1)+'s"></i>';
+  }
+  [[7,52],[17,63],[84,56],[93,66],[73,47]].forEach(function(e,k){
+    eyes+='<span class="eyes" style="left:'+e[0]+'%;top:'+e[1]+'%;animation-delay:-'+(k*1.7).toFixed(1)+'s"><i></i><i></i></span>';
+  });
+  var action=S.authReady?'<button class="gbtn" data-a="signin" id="signinbtn">'+G_ICON+'Sign in with Google</button>':'<span class="loadtxt">Loading...</span>';
+  return '<section class="front">'+
+    '<div class="layers">'+silhouettes(3,24,150,250,'#0D1F17',0)+silhouettes(8,14,210,330,'#091510',150)+silhouettes(21,7,280,400,'#040B08',190)+'</div>'+
+    '<div class="fog"></div>'+eyes+ff+'<div class="spot"></div><div class="pool"></div>'+
+    '<div class="hero"><h2>Join the Forest</h2><p>Log core, mobility and lifting sessions.</p>'+action+
+      (S.err&&S.err.signin?'<p class="errnote">'+esc(S.err.signin)+'</p>':'')+'</div>'+
+    '<div class="seed">'+seedling+'</div>'+
+    '<p class="corner">Log core, mobility, or strength to grow your tree and compete with the whole forest.</p>'+
+  '</section>';
 }
 function viewClaim(){
   var h='<section class="card"><h2>Which one is you?</h2><p class="muted" style="margin:8px 0 14px">Pick your name. It links your tree to this Google account, so only you can log for it.</p><div class="names">',n=0;
@@ -423,6 +451,7 @@ function render(force){
   if(root&&root.getAttribute&&root.getAttribute('data-season')!==sea)root.setAttribute('data-season',sea);
   var tag=document.getElementById('seasonTag');
   if(tag)tag.textContent=sea==='fall'?'Thanksgiving training':'Christmas break training';
+  if(document.body&&document.body.classList)document.body.classList.toggle('dark-front',!S.user);
   var html=!S.user?viewLanding():S.tab==='grove'?viewGrove():viewMy();
   if(html===S.lastHtml)return;
   var fid=ae&&ae.id;

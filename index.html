@@ -198,14 +198,56 @@ select{font:inherit;padding:10px 12px;border:2px solid var(--line);border-radius
 .linkbtn{background:none;border:1px solid var(--line);border-radius:8px;padding:4px 12px;color:var(--muted)}
 .whobar .linkbtn:first-of-type{margin-left:auto}
 input[type=date]{font:inherit;padding:11px 12px;border:2px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);min-width:min(100%,220px)}
+
+.brand{display:flex;align-items:center;gap:10px}
+.logo{flex:none;border-radius:11px}
+/* dark front page */
+.dark-front{background:#050D09}
+.dark-front .top{position:absolute;left:0;right:0;background:transparent;border:0}
+.dark-front .tabs{display:none}
+.dark-front .brand h1{color:#EAF3EC}
+.dark-front .brand p{color:#9DB2A3}
+.dark-front .brand b{color:#F08A82}
+.dark-front main.wrap{max-width:none;padding:0;gap:0}
+.front{position:relative;isolation:isolate;overflow:hidden;min-height:100vh;min-height:100dvh;color:#EAF3EC;background:radial-gradient(110% 70% at 50% 100%,#14351F 0%,#0A1A12 48%,#050D09 100%)}
+.layers{position:absolute;inset:0;z-index:0}
+.layer{position:absolute;left:0;bottom:0;width:100%;height:82%}
+.layer:nth-child(1){animation:drift 16s ease-in-out infinite alternate}
+.layer:nth-child(2){animation:drift 12s ease-in-out infinite alternate-reverse}
+@keyframes drift{from{transform:translateX(-6px)}to{transform:translateX(6px)}}
+.fog{position:absolute;left:0;right:0;bottom:0;height:50%;z-index:1;background:linear-gradient(to top,rgba(140,180,160,.22),rgba(140,180,160,0));animation:fog 9s ease-in-out infinite alternate}
+@keyframes fog{from{opacity:.6}to{opacity:1}}
+.eyes{position:absolute;z-index:1;display:flex;gap:7px;opacity:0;animation:peek 9s ease-in-out infinite}
+.eyes i{width:5px;height:5px;border-radius:50%;background:#F5C542;box-shadow:0 0 7px 2px rgba(245,197,66,.55)}
+@keyframes peek{0%,30%{opacity:0}38%,60%{opacity:.9}63%{opacity:.05}66%,82%{opacity:.9}90%,100%{opacity:0}}
+.ff{position:absolute;z-index:1;width:3px;height:3px;border-radius:50%;background:#FFE9A8;box-shadow:0 0 8px 3px rgba(255,233,168,.55);opacity:0;animation:ff var(--d) ease-in-out infinite}
+@keyframes ff{0%,100%{opacity:0;transform:translate(0,0)}30%{opacity:.9}65%{opacity:.5;transform:translate(var(--dx),var(--dy))}}
+.spot{position:absolute;z-index:2;left:50%;top:0;bottom:0;width:min(560px,100%);transform:translateX(-50%);clip-path:polygon(43% 0,57% 0,100% 100%,0 100%);background:linear-gradient(to bottom,rgba(255,240,200,0) 0%,rgba(255,240,200,.10) 45%,rgba(255,240,200,.30) 100%);filter:blur(10px);animation:flick 5s ease-in-out infinite}
+@keyframes flick{0%,100%{opacity:.9}50%{opacity:1}}
+.pool{position:absolute;z-index:2;left:50%;bottom:calc(clamp(70px,12%,140px) - 18px);transform:translateX(-50%);width:min(340px,80vw);height:64px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(255,236,180,.6),rgba(255,236,180,0) 70%)}
+.hero{position:relative;z-index:3;text-align:center;padding:116px 20px 0}
+.hero h2{font:800 clamp(2.6rem,9vw,4.8rem)/1 var(--display);letter-spacing:-.02em;text-shadow:0 0 36px rgba(255,235,170,.28)}
+.hero p{color:#B9CDBE;margin:12px 0 22px;font-size:1.05rem}
+.gbtn{display:inline-flex;align-items:center;gap:10px;background:#fff;color:#1b1b1b;border:0;border-radius:99px;padding:13px 24px;font:700 1rem var(--body);box-shadow:0 0 30px rgba(255,235,170,.28)}
+.gbtn:active{transform:translateY(1px)}
+.loadtxt{color:#9DB2A3}
+.errnote{margin-top:14px;color:#F2B5AF;font-size:.9rem}
+.seed{position:absolute;z-index:3;left:50%;bottom:clamp(70px,12%,140px);transform:translateX(-50%);width:min(320px,76vw);filter:drop-shadow(0 0 22px rgba(255,235,170,.35))}
+.seed svg{width:100%;height:auto;display:block}
+.corner{position:absolute;z-index:4;left:20px;bottom:18px;max-width:330px;font-size:.86rem;line-height:1.4;color:#A9BFB0}
+@media (max-width:640px){.corner{right:20px;max-width:none;text-align:center}}
+@media (prefers-reduced-motion:reduce){.layer,.fog,.eyes,.ff,.spot{animation:none}.eyes{opacity:.8}.ff{opacity:.6}}
 </style>
 </head>
 <body>
 <header class="top">
   <div class="wrap">
     <div class="brand">
+      <svg class="logo" viewBox="0 0 48 48" width="44" height="44" role="img" aria-label="SLC with a tree above it"><rect width="48" height="48" rx="11" fill="#8C1515"/><polygon points="24,4 30,13 18,13" fill="#fff"/><polygon points="24,9 33,20 15,20" fill="#fff"/><polygon points="24,15 36,27 12,27" fill="#fff"/><rect x="22" y="27" width="4" height="3" fill="#fff"/><text x="24" y="43" text-anchor="middle" font-family="'Bricolage Grotesque','Arial Black',Arial,sans-serif" font-weight="800" font-size="13" letter-spacing=".6" fill="#fff">SLC</text></svg>
+      <div>
       <h1>Strong Trunks</h1>
       <p><b>Stanford Lightweight Rowing</b> &middot; <span id="seasonTag">holiday training</span></p>
+      </div>
     </div>
     <nav class="tabs" role="tablist" aria-label="Views">
       <button role="tab" id="tab-my" data-a="tab" data-tab="my-tree" aria-controls="view">My tree</button>
