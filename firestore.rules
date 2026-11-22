@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // One document per teammate: { owner: <Google account id or ''>, logs: [...] }
+    match /trees/{treeId} {
+      function signedIn() { return request.auth != null; }
+      function validShape() {
+        return request.resource.data.keys().hasOnly(['owner', 'logs'])
+          && request.resource.data.owner is string
+          && request.resource.data.logs is list
+          && request.resource.data.logs.size() <= 800;
+      }
+      // Claim a tree nobody owns yet, once per Google account.
+      function claiming() {
+        return (resource == null || resource.data.get('owner', '') == '')
+          && request.resource.data.owner == request.auth.uid
+          && !exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      }
+      // The owner can log, or release the name by setting owner to ''.
+      function owning() {
+        return resource != null
+          && resource.data.get('owner', '') == request.auth.uid
+          && request.resource.data.owner in [request.auth.uid, ''];
+      }
+
+      allow read: if signedIn();
+      allow create, update: if signedIn() && validShape() && (claiming() || owning());
+      allow delete: if false;
+    }
+
+    // Maps a Google account to the tree it claimed. Private to that account.
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && getAfter(/databases/$(database)/documents/trees/$(request.resource.data.tree)).data.owner == uid;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow update: if false;
+    }
+  }
+}
